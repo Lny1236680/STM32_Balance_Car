@@ -41,7 +41,7 @@ void Motor_Ctrl(int16_t PWM_Left, int16_t PWM_Right)
 	}
 	else
 	{
-		PWM_SetCompare_A(0);
+		PWM_SetCompare_B(0);
 		GPIO_ResetBits(GPIOB , GPIO_Pin_0 | GPIO_Pin_1);
 	}
 

@@ -42,15 +42,16 @@ void TIM1_UP_IRQHandler(void)
 	if(TIM_GetITStatus(TIM1,TIM_IT_Update) != RESET)
 	{
 		MPU6050_DMP_Get_Data(&Pitch,&Roll,&Yaw);
-		MPU6050_GetData(&GyroX, &GyroZ);
-		GyroX+=40;
-		GyroZ-=14;
 		cnt++;
 		if(cnt>=5)
 		{
 			cnt=0;
 			Speed_Right=-Encoder_Get(TIM3);
-			Speed_Left=-Encoder_Get(TIM4);		
+			Speed_Left=-Encoder_Get(TIM4);
+			/* bit-banged I2C reg reads are slow: do them at 5ms, not every 1ms */
+			MPU6050_GetData(&GyroX, &GyroZ);
+			GyroX+=40;
+			GyroZ-=14;
 		}
 		BT_control();
 		Car_Balance_Adjust();

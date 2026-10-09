@@ -57,40 +57,54 @@ uint8_t Serial_GetRxFlag(void)
 
 void BT_control(void)
 {
-	switch(Serial_RxPacket[0])
+	static uint16_t idle_cnt=0;		// ms since last full frame (called once per 1ms)
+	if(Serial_GetRxFlag())			// act only on a complete frame: no torn read
 	{
-		case -10 ... 10:		//x=0
-			switch(Serial_RxPacket[1])
-			{
-				case -10 ... 10:
-					Stop();
-				break;
-				case 11 ... 50:
-					Run_forward();
-				break;
-				case -50 ... -11:
-					Run_backward();
-				break;
-			};
-		break;
-		
-		case -50 ... -11:		//x>0
-			switch(Serial_RxPacket[1])
-			{
-				case -50 ... 50:
-					Other_direction();
-				break;
-			};
-		break;
-		
-		case 11 ... 50:	//x<0
-			switch(Serial_RxPacket[1])
-			{
-				case -50 ... 50:
-					Other_direction();
-				break;
-			};
-		break;
+		idle_cnt=0;
+		switch(Serial_RxPacket[0])
+		{
+			case -10 ... 10:		//x=0
+				switch(Serial_RxPacket[1])
+				{
+					case -10 ... 10:
+						Stop();
+					break;
+					case 11 ... 50:
+						Run_forward();
+					break;
+					case -50 ... -11:
+						Run_backward();
+					break;
+				};
+			break;
+
+			case -50 ... -11:		//x>0
+				switch(Serial_RxPacket[1])
+				{
+					case -50 ... 50:
+						Other_direction();
+					break;
+				};
+			break;
+
+			case 11 ... 50:	//x<0
+				switch(Serial_RxPacket[1])
+				{
+					case -50 ... 50:
+						Other_direction();
+					break;
+				};
+			break;
+		}
+	}
+	else
+	{
+		if(idle_cnt<0xFFFF)
+			idle_cnt++;
+		if(idle_cnt>=100)			// >100ms no frame: link lost / hand off, force stop
+		{
+			Stop();
+		}
 	}
 }
 
